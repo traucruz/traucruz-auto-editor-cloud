@@ -1,0 +1,42 @@
+
+name: Testar editor TRAUCRUZ
+
+on:
+  workflow_dispatch:
+
+jobs:
+  editar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Baixar projeto
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Criar vídeo de teste
+        run: |
+          ffmpeg -y \
+            -f lavfi -i "testsrc2=size=640x360:rate=30" \
+            -f lavfi -i "sine=frequency=440:duration=5" \
+            -t 5 -c:v libx264 -c:a aac teste.mp4
+
+      - name: Executar editor
+        run: |
+          python editor.py teste.mp4 resultado.mp4
+
+      - name: Salvar vídeo editado
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-traucruz
+          path: resultado.mp4
+          retention-days: 3
